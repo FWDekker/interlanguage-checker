@@ -11,6 +11,6 @@ internal object TestClassTest {
 
     @Test
     fun fooTestFail() {
-        assertThat(TestClass().foo()).isEqualTo(4)
+        assertThat(TestClass().foo()).isNotEqualTo(4)
     }
 }
