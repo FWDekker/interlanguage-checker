@@ -29,6 +29,7 @@ dependencies {
 
     testCompile group: "org.assertj", name: "assertj-core", version: assertjVersion
     testCompile group: "org.junit.jupiter", name: "junit-jupiter-engine", version: junitVersion
+    testCompile group: "com.nhaarman", name: "mockito-kotlin", version: mockitoKotlinVersion
 
     testImplementation group: "org.jetbrains.spek", name: "spek-api", version: spekVersion
     testImplementation group: "org.junit.jupiter", name: "junit-jupiter-api", version: junitVersion
