@@ -13,12 +13,19 @@ import org.jetbrains.spek.api.dsl.it
  * Unit tests for [Page].
  */
 internal object PageTest : Spek({
+    val location = PageLocation("language", "page name")
+
+    fun mockArticle(contents: String) = mock<Article> { on { it.text } doReturn contents }
+
+    fun createPage(contents: String) = Page(location, mockArticle(contents))
+
+
+    it("returns the contents of the article it wraps around") {
+        assertThat(Page(location, mockArticle("Nabla Randem Scones")).contents)
+            .isEqualTo("Nabla Randem Scones")
+    }
+
     describe("extracting interwiki links") {
-        val location = PageLocation("language", "page name")
-
-        fun mockArticle(contents: String) = mock<Article> { on { it.text } doReturn contents }
-
-        fun createPage(contents: String) = Page(location, mockArticle(contents))
 
         context("bad-weather cases") {
             it("does not find any interwiki links in an empty document") {

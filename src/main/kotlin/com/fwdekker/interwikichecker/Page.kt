@@ -10,12 +10,17 @@ import net.sourceforge.jwbf.core.contentRep.Article
  */
 class Page(private val location: PageLocation, private val article: Article) {
     /**
+     * The contents of the page.
+     */
+    val contents = article.text
+
+    /**
      * Returns a map of all interwiki links on this page as a map from the language to the page.
      *
      * @return a map of all interwiki links on this page as a map from the language to the page
      */
     fun getInterwikiLinks() =
-        extractInterwikiLinks(article.text)
+        extractInterwikiLinks(contents)
             .map { InterwikiLink(location, PageLocation(it.removeSurrounding("[[", "]]"))) }
             .toList()
 
