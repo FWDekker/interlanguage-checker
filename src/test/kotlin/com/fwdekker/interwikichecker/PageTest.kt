@@ -26,7 +26,6 @@ internal object PageTest : Spek({
     }
 
     describe("extracting interwiki links") {
-
         context("bad-weather cases") {
             it("does not find any interwiki links in an empty document") {
                 assertThat(createPage("").getInterwikiLinks()).isEmpty()
