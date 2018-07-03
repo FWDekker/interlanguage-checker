@@ -51,6 +51,10 @@ data class PageLocation(val language: String, val pageName: String) {
      * @param fullLink the location to a page including the language specifier, such as "en:Page" or "de:User:Foo"
      */
     constructor(fullLink: String) : this(fullLink.substringBefore(":"), fullLink.substringAfter(":"))
+
+    override fun toString(): String {
+        return "$language:$pageName"
+    }
 }
 
 /**
