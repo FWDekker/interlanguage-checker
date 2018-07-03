@@ -25,7 +25,7 @@ class InterwikiCollector(private val downloader: PageDownloader) {
 
         while (queue.isNotEmpty()) {
             val nextPage = queue.pop() ?: continue
-            if (links.containsKey(nextPage)) continue
+            if (nextPage in links) continue
 
             downloader.downloadPage(nextPage).getInterwikiLinks()
                 .also {
