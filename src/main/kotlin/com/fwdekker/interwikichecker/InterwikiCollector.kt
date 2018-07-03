@@ -45,6 +45,16 @@ class InterwikiCollector(private val downloader: PageDownloader) {
  */
 data class InterwikiNetwork(val links: Map<PageLocation, List<InterwikiLink>>) {
     /**
+     * A set of all languages contained in this [InterwikiNetwork].
+     */
+    val languages get() = links.keys.map { it.language }.toSet()
+
+    /**
+     * A list of all pages contained in this [InterwikiNetwork].
+     */
+    val pages get() = links.keys.toList()
+
+    /**
      * Returns the [PageLocation]s of all pages with language [language].
      *
      * @param language the language for which to return the [PageLocation]s

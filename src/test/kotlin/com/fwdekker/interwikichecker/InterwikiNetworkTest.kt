@@ -33,6 +33,16 @@ internal object InterwikiNetworkTest : Spek({
 
 
     describe("interwiki networks") {
+        it("returns a list of all languages") {
+            assertThat(network.languages)
+                .containsExactlyInAnyOrder("lu", "en", "se", "ch")
+        }
+
+        it("returns a list of all pages") {
+            assertThat(network.pages)
+                .containsExactlyInAnyOrderElementsOf(locations)
+        }
+
         it("returns a list of pages in a particular language") {
             assertThat(network.getPagesInLanguage("lu"))
                 .containsExactlyInAnyOrder(locations[0], locations[2])
