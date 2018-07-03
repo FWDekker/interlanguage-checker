@@ -30,7 +30,6 @@ internal object PageDownloaderIntegrationTest : Spek({
 
                 assertThatThrownBy { downloader.downloadPage(PageLocation("en", "Home")) }
                     .isInstanceOf(IllegalStateException::class.java)
-                    .hasMessage("java.net.UnknownHostException: invalid.domain")
             }
 
             it("returns an empty page if the page does not exist on the wiki") {
