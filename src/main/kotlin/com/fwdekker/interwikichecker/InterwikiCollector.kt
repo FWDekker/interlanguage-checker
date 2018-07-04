@@ -87,7 +87,7 @@ data class InterwikiNetwork(val links: Map<PageLocation, List<InterwikiLink>>) {
      * @param page the page from which the [InterwikiLink]s originate
      * @return all [InterwikiLink]s originating from [page]
      */
-    fun getLinksFrom(page: PageLocation) = links[page]
+    fun getLinksFrom(page: PageLocation) = links[page] ?: emptyList()
 
     /**
      * Returns all [InterwikiLink]s that link to [targetLanguage].

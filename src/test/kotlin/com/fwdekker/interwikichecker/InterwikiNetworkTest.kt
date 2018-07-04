@@ -61,6 +61,11 @@ internal object InterwikiNetworkTest : Spek({
                 .containsExactlyInAnyOrder(InterwikiLink(locations[2], locations[3]))
         }
 
+        it("returns an empty list of all links originating from a given page") {
+            assertThat(network.getLinksFrom(PageLocation("di")))
+                .isEmpty()
+        }
+
         it("returns a list of all links going to a given language") {
             assertThat(network.getLinksTo("ch"))
                 .containsExactlyInAnyOrder(
