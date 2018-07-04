@@ -1,5 +1,6 @@
 package com.fwdekker.interwikichecker
 
+import mu.KLogging
 import net.sourceforge.jwbf.core.actions.HttpActionClient
 import net.sourceforge.jwbf.mediawiki.bots.MediaWikiBot
 
@@ -29,6 +30,8 @@ class HttpActionClientFactory(private val urlBuilder: (String) -> String) {
  * @property httpActionClientFactory a factory for [HttpActionClient]s to connect to interwikis with
  */
 class PageDownloader(private val httpActionClientFactory: HttpActionClientFactory) {
+    companion object : KLogging()
+
     /**
      * A mapping from a language to the downloader to use for downloading pages for that language.
      */
@@ -42,6 +45,7 @@ class PageDownloader(private val httpActionClientFactory: HttpActionClientFactor
      */
     fun downloadPage(location: PageLocation) =
         Page(location, getDownloader(location.language).getArticle(location.pageName))
+            .also { logger.info { "Downloading `$location`." } }
 
     /**
      * Returns the previously created downloader for the wiki with language [language]; if no such downloader exists a

@@ -1,5 +1,6 @@
 package com.fwdekker.interwikichecker
 
+import mu.KLogging
 import java.util.LinkedList
 
 /**
@@ -8,6 +9,8 @@ import java.util.LinkedList
  * @property downloader the [PageDownloader] used to download pages with
  */
 class InterwikiCollector(private val downloader: PageDownloader) {
+    companion object : KLogging()
+
     /**
      * Builds a network of interwiki links between pages, starting from [location].
      *
@@ -18,6 +21,8 @@ class InterwikiCollector(private val downloader: PageDownloader) {
      * @return a network of interwiki links between pages, starting from [location]
      */
     fun buildInterwikiNetwork(location: PageLocation): InterwikiNetwork {
+        logger.info { "Building interwiki network for `$location`." }
+
         val links = HashMap<PageLocation, List<InterwikiLink>>()
 
         val queue = LinkedList<PageLocation>()
