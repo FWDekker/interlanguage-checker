@@ -12,7 +12,7 @@ class Page(private val location: PageLocation, private val article: Article) {
     /**
      * The contents of the page.
      */
-    val contents = article.text
+    val contents: String = article.text
 
     /**
      * Returns a map of all interwiki links on this page as a map from the language to the page.
