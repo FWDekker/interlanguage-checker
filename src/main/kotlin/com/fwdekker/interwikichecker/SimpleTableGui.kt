@@ -1,5 +1,6 @@
 package com.fwdekker.interwikichecker
 
+import java.awt.BorderLayout
 import java.net.URL
 import javax.swing.JButton
 import javax.swing.JFrame
@@ -11,27 +12,29 @@ import javax.swing.JTextField
 class SimpleTableGui(downloader: PageDownloader) {
     private val collector = InterwikiCollector(downloader)
 
-    private val input = JTextField("Rolling pin (Fallout 3)")
-    private val submitInput = JButton("Load")
+    private val pageSelection = JTextField("Rolling pin (Fallout 3)")
+    private val pageSelectionSubmit = JButton("Load")
     private var table = JTable()
 
     init {
         val frame = JFrame()
-        val panel = JPanel()
+        val panel = JPanel(BorderLayout())
         frame.add(panel)
 
-        panel.add(input)
-        panel.add(submitInput)
-        frame.rootPane.defaultButton = submitInput
+        val controlPanel = JPanel()
+        panel.add(controlPanel, BorderLayout.NORTH)
+        controlPanel.add(pageSelection)
+        controlPanel.add(pageSelectionSubmit)
+        frame.rootPane.defaultButton = pageSelectionSubmit
 
-        submitInput.addActionListener {
-            table.model = createTableFor(PageLocation("en", input.text)).model
+        pageSelectionSubmit.addActionListener {
+            table.model = createTableFor(PageLocation("en", pageSelection.text)).model
         }
 
         table = JTable()
         val scrollPane = JScrollPane(table)
 
-        panel.add(scrollPane)
+        panel.add(scrollPane, BorderLayout.CENTER)
         frame.pack()
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.isVisible = true
@@ -62,8 +65,9 @@ fun main(args: Array<String>) {
     SimpleTableGui(PageDownloader(MediaWikiBotFactory(), createFalloutInterwikiMap()))
 }
 
-fun createFalloutInterwikiMap() = MediaWikiBotFactory().createMediaWikiBot(URL("https://fallout.wikia.com/"))
-    .siteinfo.interwikis
-    .filter { it.value.contains("fallout.wikia.com") }
-    .map { Pair(it.key, it.value.replace("/wiki", "")) }
-    .toMap()
+fun createFalloutInterwikiMap() =
+    MediaWikiBotFactory().createMediaWikiBot(URL("https://fallout.wikia.com/"))
+        .siteinfo.interwikis
+        .filter { it.value.contains("fallout.wikia.com") }
+        .map { Pair(it.key, it.value.replace("/wiki", "")) }
+        .toMap()
