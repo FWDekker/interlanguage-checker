@@ -5,31 +5,31 @@ import net.sourceforge.jwbf.core.actions.HttpActionClient
 import net.sourceforge.jwbf.mediawiki.bots.MediaWikiBot
 
 /**
- * Creates [HttpActionClient]s to connect to interwikis with.
+ * Creates [MediaWikiBot]s to connect to interwikis with.
  *
  * @property urlBuilder given an interwiki abbreviation, returns the url such that appending "api.php" gives the URL of
  * that interwiki's endpoint
  */
-class HttpActionClientFactory(private val urlBuilder: (String) -> String) {
+class MediaWikiBotFactory(private val urlBuilder: (String) -> String) {
     /**
-     * Creates an [HttpActionClient] that connects to the wiki with the given language.
+     * Creates a [MediaWikiBot] that connects to the wiki with the given language.
      *
      * @param language the language of the wiki to create a bot for
-     * @return an [HttpActionClient] that connects to the wiki with the given language
+     * @return a [MediaWikiBot] that connects to the wiki with the given language
      */
-    fun createHttpActionClient(language: String): HttpActionClient =
-        HttpActionClient.builder()
+    fun createMediaWikiBot(language: String): MediaWikiBot =
+        MediaWikiBot(HttpActionClient.builder()
             .withUrl(urlBuilder(language))
             .withUserAgent("InterwikiChecker", "0.0.1")
-            .build()
+            .build())
 }
 
 /**
  * Downloads pages in a given language.
  *
- * @property httpActionClientFactory a factory for [HttpActionClient]s to connect to interwikis with
+ * @property mediaWikiBotFactory a factory for [MediaWikiBot]s to connect to interwikis with
  */
-class PageDownloader(private val httpActionClientFactory: HttpActionClientFactory) {
+class PageDownloader(private val mediaWikiBotFactory: MediaWikiBotFactory) {
     companion object : KLogging()
 
     /**
@@ -64,6 +64,5 @@ class PageDownloader(private val httpActionClientFactory: HttpActionClientFactor
      * @param language the language of the wiki to create a bot for
      * @return a new [MediaWikiBot] that can download pages from the wiki at the specified URL
      */
-    private fun createBot(language: String) =
-        MediaWikiBot(httpActionClientFactory.createHttpActionClient(language))
+    private fun createBot(language: String) = mediaWikiBotFactory.createMediaWikiBot(language)
 }

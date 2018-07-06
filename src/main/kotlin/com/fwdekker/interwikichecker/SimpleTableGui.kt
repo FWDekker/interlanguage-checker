@@ -58,7 +58,7 @@ fun InterwikiNetwork.toTable() =
 
 
 fun main(args: Array<String>) {
-    SimpleTableGui(PageDownloader(HttpActionClientFactory { language ->
+    SimpleTableGui(PageDownloader(MediaWikiBotFactory { language ->
         if (language == "en") "https://fallout.wikia.com/"
         else "http://$language.fallout.wikia.com/"
     }))
