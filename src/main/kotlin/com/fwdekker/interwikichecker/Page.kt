@@ -19,8 +19,8 @@ class Page(private val location: PageLocation, private val article: Article) {
      *
      * @return a map of all interwiki links on this page as a map from the language to the page
      */
-    fun getInterwikiLinks() =
-        extractInterwikiLinks(contents)
+    fun getInterwikiLinks(interwikiMap: Map<String, String>) =
+        extractInterwikiLinks(contents, interwikiMap)
             .map { InterwikiLink(location, PageLocation(it.removeSurrounding("[[", "]]"))) }
             .toList()
 
@@ -34,8 +34,8 @@ class Page(private val location: PageLocation, private val article: Article) {
      * @param contents the contents to find interwiki links in
      * @return all interwiki links that occur in [contents]
      */
-    private fun extractInterwikiLinks(contents: String) =
-        Regex("\\[\\[.{2}:.*]]").findAll(contents).map { it.value }
+    private fun extractInterwikiLinks(contents: String, interwikiMap: Map<String, String>) =
+        interwikiMap.keys.flatMap { Regex("\\[\\[$it:.*]]").findAll(contents).map { it.value }.toList() }
 }
 
 /**

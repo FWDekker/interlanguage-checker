@@ -59,10 +59,10 @@ fun InterwikiNetwork.toTable() =
 
 
 fun main(args: Array<String>) {
-    SimpleTableGui(PageDownloader(MediaWikiBotFactory(createFalloutInterwikiMap())))
+    SimpleTableGui(PageDownloader(MediaWikiBotFactory(), createFalloutInterwikiMap()))
 }
 
-fun createFalloutInterwikiMap() = MediaWikiBotFactory.createMediaWikiBot(URL("https://fallout.wikia.com/"))
+fun createFalloutInterwikiMap() = MediaWikiBotFactory().createMediaWikiBot(URL("https://fallout.wikia.com/"))
     .siteinfo.interwikis
     .filter { it.value.contains("fallout.wikia.com") }
     .map { Pair(it.key, it.value.replace("/wiki", "")) }

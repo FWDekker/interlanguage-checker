@@ -19,6 +19,8 @@ internal object PageTest : Spek({
 
     fun createPage(contents: String) = Page(location, mockArticle(contents))
 
+    fun interwikiMap(language: String) = mapOf(Pair(language, ""))
+
 
     it("returns the contents of the article it wraps around") {
         assertThat(Page(location, mockArticle("Nabla Randem Scones")).contents)
@@ -28,53 +30,63 @@ internal object PageTest : Spek({
     describe("extracting interwiki links") {
         context("bad-weather cases") {
             it("does not find any interwiki links in an empty document") {
-                assertThat(createPage("").getInterwikiLinks()).isEmpty()
+                assertThat(createPage("").getInterwikiLinks(interwikiMap("Gr"))).isEmpty()
             }
 
             it("does not find any interwiki links in a document without any links") {
-                assertThat(createPage("Ride Picking Avolate").getInterwikiLinks()).isEmpty()
+                assertThat(createPage("Ride Picking Avolate").getInterwikiLinks(interwikiMap("cr"))).isEmpty()
             }
 
             it("does not think a regular link is an interwiki link") {
-                assertThat(createPage("[[Comptrol]]").getInterwikiLinks()).isEmpty()
+                assertThat(createPage("[[Comptrol]]").getInterwikiLinks(interwikiMap("dH"))).isEmpty()
             }
 
             it("does not think a two-letter link is an interwiki link") {
-                assertThat(createPage("[[it]]").getInterwikiLinks()).isEmpty()
+                assertThat(createPage("[[it]]").getInterwikiLinks(interwikiMap("it"))).isEmpty()
             }
 
             it("does not think that a namespace identifies an interwiki link") {
-                assertThat(createPage("[[Beer:Hoss]]").getInterwikiLinks()).isEmpty()
+                assertThat(createPage("[[Beer:Hoss]]").getInterwikiLinks(interwikiMap("Curried"))).isEmpty()
             }
 
             it("does not think that a nested two-letter namespace identifies an interwiki link") {
-                assertThat(createPage("[[Relend:ty:Gemot]]").getInterwikiLinks()).isEmpty()
+                assertThat(createPage("[[Relend:ty:Gemot]]").getInterwikiLinks(interwikiMap("ty"))).isEmpty()
             }
 
             it("does not think that an interwiki link without square braces is an interwiki link") {
-                assertThat(createPage("en:Untripe").getInterwikiLinks()).isEmpty()
+                assertThat(createPage("en:Untripe").getInterwikiLinks(interwikiMap("en"))).isEmpty()
             }
         }
 
         context("good-weather cases") {
             it("finds a regular interwiki link") {
-                assertThat(createPage("[[kG:Sandyish]]").getInterwikiLinks())
+                assertThat(createPage("[[kG:Sandyish]]").getInterwikiLinks(interwikiMap("kG")))
                     .containsExactly(InterwikiLink(location, PageLocation("kG", "Sandyish")))
             }
 
             it("finds a regular interwiki link that contains a namespace") {
-                assertThat(createPage("[[fr:Yachters:Martite]]").getInterwikiLinks())
+                assertThat(createPage("[[fr:Yachters:Martite]]").getInterwikiLinks(interwikiMap("fr")))
                     .containsExactly(InterwikiLink(location, PageLocation("fr", "Yachters:Martite")))
             }
 
             it("finds a regular interwiki link that contains a two-letter namespace") {
-                assertThat(createPage("[[yu:di:Nomina]]").getInterwikiLinks())
+                assertThat(createPage("[[yu:di:Nomina]]").getInterwikiLinks(interwikiMap("yu")))
                     .containsExactly(InterwikiLink(location, PageLocation("yu", "di:Nomina")))
             }
 
             it("finds an interwiki link even if the page name is empty") {
-                assertThat(createPage("[[aa:]]").getInterwikiLinks())
+                assertThat(createPage("[[aa:]]").getInterwikiLinks(interwikiMap("aa")))
                     .containsExactly(InterwikiLink(location, PageLocation("aa", "")))
+            }
+
+            it("finds short interwiki identifiers") {
+                assertThat(createPage("[[u:Unnigh]]").getInterwikiLinks(interwikiMap("u")))
+                    .containsExactly(InterwikiLink(location, PageLocation("u", "Unnigh")))
+            }
+
+            it("finds long interwiki identifiers") {
+                assertThat(createPage("[[hhknilzbtu:Venada]]").getInterwikiLinks(interwikiMap("hhknilzbtu")))
+                    .containsExactly(InterwikiLink(location, PageLocation("hhknilzbtu", "Venada")))
             }
         }
     }

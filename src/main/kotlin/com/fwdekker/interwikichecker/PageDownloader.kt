@@ -7,41 +7,31 @@ import java.net.URL
 
 /**
  * Creates [MediaWikiBot]s to connect to interwikis with.
- *
- * @property urlBuilder given an interwiki abbreviation, returns the url such that appending "api.php" gives the URL of
- * that interwiki's endpoint
  */
-class MediaWikiBotFactory(private val interwikiMap: Map<String, String>) {
+class MediaWikiBotFactory {
     /**
-     * Creates a [MediaWikiBot] that connects to the wiki with the given language.
+     * Creates a [MediaWikiBot] that connects to the wiki at the given URL.
      *
-     * @param language the language of the wiki to create a bot for
-     * @return a [MediaWikiBot] that connects to the wiki with the given language
+     * @param url the URL of the wiki to create a bot for
+     * @return a [MediaWikiBot] that connects to the wiki at the given URL
      */
-    fun createMediaWikiBot(language: String) = createMediaWikiBot(URL(interwikiMap[language]))
-
-
-    companion object {
-        /**
-         * Creates a [MediaWikiBot] that connects to the wiki at the given URL.
-         *
-         * @param url the URL of the wiki to create a bot for
-         * @return a [MediaWikiBot] that connects to the wiki at the given URL
-         */
-        fun createMediaWikiBot(url: URL): MediaWikiBot =
-            MediaWikiBot(HttpActionClient.builder()
-                .withUrl(url)
-                .withUserAgent("InterwikiChecker", "0.0.1")
-                .build())
-    }
+    fun createMediaWikiBot(url: URL): MediaWikiBot =
+        MediaWikiBot(HttpActionClient.builder()
+            .withUrl(url)
+            .withUserAgent("InterwikiChecker", "0.0.1")
+            .build())
 }
 
 /**
  * Downloads pages in a given language.
  *
  * @property mediaWikiBotFactory a factory for [MediaWikiBot]s to connect to interwikis with
+ * @property interwikiMap a map from interwiki identifiers to wiki URLs
  */
-class PageDownloader(private val mediaWikiBotFactory: MediaWikiBotFactory) {
+class PageDownloader(
+    private val mediaWikiBotFactory: MediaWikiBotFactory,
+    val interwikiMap: Map<String, String>
+) {
     companion object : KLogging()
 
     /**
@@ -76,5 +66,5 @@ class PageDownloader(private val mediaWikiBotFactory: MediaWikiBotFactory) {
      * @param language the language of the wiki to create a bot for
      * @return a new [MediaWikiBot] that can download pages from the wiki at the specified URL
      */
-    private fun createBot(language: String) = mediaWikiBotFactory.createMediaWikiBot(language)
+    private fun createBot(language: String) = mediaWikiBotFactory.createMediaWikiBot(URL(interwikiMap[language]))
 }

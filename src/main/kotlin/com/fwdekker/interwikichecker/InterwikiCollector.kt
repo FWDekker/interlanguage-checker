@@ -32,7 +32,7 @@ class InterwikiCollector(private val downloader: PageDownloader) {
             val nextPage = queue.pop() ?: continue
             if (nextPage in links) continue
 
-            downloader.downloadPage(nextPage).getInterwikiLinks()
+            downloader.downloadPage(nextPage).getInterwikiLinks(downloader.interwikiMap)
                 .also {
                     links[nextPage] = it
                     queue.addAll(it.map { it.target })
