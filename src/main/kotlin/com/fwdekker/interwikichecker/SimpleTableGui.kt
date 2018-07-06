@@ -1,5 +1,6 @@
 package com.fwdekker.interwikichecker
 
+import java.net.URL
 import javax.swing.JButton
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -58,8 +59,11 @@ fun InterwikiNetwork.toTable() =
 
 
 fun main(args: Array<String>) {
-    SimpleTableGui(PageDownloader(MediaWikiBotFactory { language ->
-        if (language == "en") "https://fallout.wikia.com/"
-        else "http://$language.fallout.wikia.com/"
-    }))
+    SimpleTableGui(PageDownloader(MediaWikiBotFactory(createFalloutInterwikiMap())))
 }
+
+fun createFalloutInterwikiMap() = MediaWikiBotFactory.createMediaWikiBot(URL("https://fallout.wikia.com/"))
+    .siteinfo.interwikis
+    .filter { it.value.contains("fallout.wikia.com") }
+    .map { Pair(it.key, it.value.replace("/wiki", "")) }
+    .toMap()

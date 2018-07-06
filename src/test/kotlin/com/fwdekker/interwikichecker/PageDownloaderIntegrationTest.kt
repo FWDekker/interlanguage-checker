@@ -13,10 +13,10 @@ import org.jetbrains.spek.api.dsl.it
  */
 internal object PageDownloaderIntegrationTest : Spek({
     describe("downloading pages") {
-        fun createDownloader() = PageDownloader(MediaWikiBotFactory {
-            if (it == "en") "https://fallout.wikia.com/"
-            else "https://$it.fallout.wikia.com/"
-        })
+        fun createDownloader() = PageDownloader(MediaWikiBotFactory(mapOf(
+            Pair("en", "https://fallout.wikia.com/"),
+            Pair("it", "http://it.fallout.wikia.com/")
+        )))
 
 
         // Sanity test
@@ -26,7 +26,7 @@ internal object PageDownloaderIntegrationTest : Spek({
 
         describe("downloading pages") {
             it("throws an exception if the wiki does not exist") {
-                val downloader = PageDownloader(MediaWikiBotFactory { "http://invalid.domain/" })
+                val downloader = PageDownloader(MediaWikiBotFactory(mapOf(Pair("en", "http://invalid.domain/"))))
 
                 assertThatThrownBy { downloader.downloadPage(PageLocation("en", "Home")) }
                     .isInstanceOf(IllegalStateException::class.java)

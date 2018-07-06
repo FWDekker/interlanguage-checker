@@ -3,6 +3,7 @@ package com.fwdekker.interwikichecker
 import mu.KLogging
 import net.sourceforge.jwbf.core.actions.HttpActionClient
 import net.sourceforge.jwbf.mediawiki.bots.MediaWikiBot
+import java.net.URL
 
 /**
  * Creates [MediaWikiBot]s to connect to interwikis with.
@@ -10,18 +11,29 @@ import net.sourceforge.jwbf.mediawiki.bots.MediaWikiBot
  * @property urlBuilder given an interwiki abbreviation, returns the url such that appending "api.php" gives the URL of
  * that interwiki's endpoint
  */
-class MediaWikiBotFactory(private val urlBuilder: (String) -> String) {
+class MediaWikiBotFactory(private val interwikiMap: Map<String, String>) {
     /**
      * Creates a [MediaWikiBot] that connects to the wiki with the given language.
      *
      * @param language the language of the wiki to create a bot for
      * @return a [MediaWikiBot] that connects to the wiki with the given language
      */
-    fun createMediaWikiBot(language: String): MediaWikiBot =
-        MediaWikiBot(HttpActionClient.builder()
-            .withUrl(urlBuilder(language))
-            .withUserAgent("InterwikiChecker", "0.0.1")
-            .build())
+    fun createMediaWikiBot(language: String) = createMediaWikiBot(URL(interwikiMap[language]))
+
+
+    companion object {
+        /**
+         * Creates a [MediaWikiBot] that connects to the wiki at the given URL.
+         *
+         * @param url the URL of the wiki to create a bot for
+         * @return a [MediaWikiBot] that connects to the wiki at the given URL
+         */
+        fun createMediaWikiBot(url: URL): MediaWikiBot =
+            MediaWikiBot(HttpActionClient.builder()
+                .withUrl(url)
+                .withUserAgent("InterwikiChecker", "0.0.1")
+                .build())
+    }
 }
 
 /**
