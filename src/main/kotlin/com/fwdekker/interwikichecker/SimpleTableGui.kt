@@ -1,16 +1,15 @@
 package com.fwdekker.interwikichecker
 
 import javafx.application.Application
-import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
-import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.scene.Scene
 import javafx.scene.control.Button
-import javafx.scene.control.TableColumn
-import javafx.scene.control.TableView
+import javafx.scene.control.ListView
+import javafx.scene.control.ScrollPane
 import javafx.scene.control.TextField
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.HBox
 import javafx.stage.Stage
 import java.net.URL
 
@@ -19,7 +18,7 @@ class TableApplication : Application() {
 
     private val pageSelection = TextField()
     private val pageSelectionSubmit = Button("Load")
-    private val table = TableView<ObservableList<PageLocation>>()
+    private val pageList = ListView<PageLocation>()
 
 
     init {
@@ -29,31 +28,32 @@ class TableApplication : Application() {
 
 
     override fun start(stage: Stage) {
-        pageSelectionSubmit.setOnAction(::onPageSelectionSubmit)
+        val mainPane = BorderPane()
 
-        val pane = BorderPane()
-        pane.top = pageSelection
-        pane.left = pageSelectionSubmit
-        pane.center = table
+        HBox()
+            .also { settingsBox ->
+                mainPane.top = settingsBox
 
-        stage.scene = Scene(pane, 300.0, 500.0)
+                settingsBox.children.add(pageSelection)
+                settingsBox.children.add(pageSelectionSubmit)
+
+                pageSelectionSubmit.setOnAction(::onPageSelectionSubmit)
+            }
+
+        ScrollPane()
+            .also { centerPane ->
+                mainPane.center = centerPane
+
+                centerPane.content = pageList
+            }
+
+        stage.scene = Scene(mainPane, 1000.0, 500.0)
         stage.show()
     }
 
     private fun onPageSelectionSubmit(event: ActionEvent) {
         val network = collector.buildInterwikiNetwork(PageLocation("en", pageSelection.text))
-
-        table.items.setAll(network.toObservableTable())
-        table.columns.setAll(
-            network.pages
-                .sortedBy { it.toString() }
-                .mapIndexed { i, location ->
-                    TableColumn<ObservableList<PageLocation>, PageLocation>(location.toString())
-                        .apply {
-                            setCellValueFactory { data -> SimpleObjectProperty<PageLocation>(data.value[i]) }
-                        }
-                }
-        )
+        pageList.items = FXCollections.observableList(network.pages)
     }
 
 
@@ -71,15 +71,3 @@ class TableApplication : Application() {
                 .toMap()
     }
 }
-
-private fun InterwikiNetwork.toObservableTable() =
-    FXCollections.observableList(
-        pages.sortedBy(PageLocation::toString).map<PageLocation, ObservableList<PageLocation>?> { target ->
-            FXCollections.observableList(
-                pages.sortedBy(PageLocation::toString).map { origin ->
-                    when {
-                        InterwikiLink(origin, target) in getLinksFrom(origin) -> target
-                        else -> null
-                    }
-                })
-        })
