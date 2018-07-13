@@ -23,6 +23,7 @@ repositories {
 
 dependencies {
     compile group: "io.github.microutils", name: "kotlin-logging", version: kloggingVersion
+    compile group: "org.controlsfx", name: "controlsfx", version: controlsFxVersion
     compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jdk8", version: kotlinVersion
     compile group: "org.jetbrains.kotlin", name: "kotlin-reflect", version: kotlinVersion
     compile group: "net.sourceforge", name: "jwbf", version: jwbfVersion
