@@ -35,7 +35,7 @@ class Page(private val location: PageLocation, private val article: Article) {
      * @return all interwiki links that occur in [contents]
      */
     private fun extractInterwikiLinks(contents: String, interwikiMap: Map<String, String>) =
-        interwikiMap.keys.flatMap { Regex("\\[\\[$it:.*]]").findAll(contents).map { it.value }.toList() }
+        interwikiMap.keys.flatMap { Regex("\\[\\[$it:[^]]*]]").findAll(contents).map { it.value }.toList() }
 }
 
 /**

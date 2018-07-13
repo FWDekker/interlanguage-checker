@@ -19,7 +19,7 @@ internal object PageTest : Spek({
 
     fun createPage(contents: String) = Page(location, mockArticle(contents))
 
-    fun interwikiMap(language: String) = mapOf(Pair(language, ""))
+    fun interwikiMap(vararg languages: String) = languages.map { Pair(it, "") }.toMap()
 
 
     it("returns the contents of the article it wraps around") {
@@ -87,6 +87,16 @@ internal object PageTest : Spek({
             it("finds long interwiki identifiers") {
                 assertThat(createPage("[[hhknilzbtu:Venada]]").getInterwikiLinks(interwikiMap("hhknilzbtu")))
                     .containsExactly(InterwikiLink(location, PageLocation("hhknilzbtu", "Venada")))
+            }
+
+            it("finds multiple interwiki links even if not separated by newlines") {
+                assertThat(createPage("[[lq:Cimicid]] [[ja:Triode]] [[yi:Taglet]]")
+                    .getInterwikiLinks(interwikiMap("ja", "lq", "yi")))
+                    .containsExactlyInAnyOrder(
+                        InterwikiLink(location, PageLocation("lq", "Cimicid")),
+                        InterwikiLink(location, PageLocation("ja", "Triode")),
+                        InterwikiLink(location, PageLocation("yi", "Taglet"))
+                    )
             }
         }
     }
