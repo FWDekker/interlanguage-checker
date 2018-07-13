@@ -1,73 +1,99 @@
 package com.fwdekker.interwikichecker
 
-import java.awt.BorderLayout
+import javafx.application.Application
+import javafx.collections.FXCollections
+import javafx.event.ActionEvent
+import javafx.scene.Scene
+import javafx.scene.control.Button
+import javafx.scene.control.ScrollPane
+import javafx.scene.control.TextField
+import javafx.scene.layout.BorderPane
+import javafx.scene.layout.HBox
+import javafx.stage.Stage
+import org.controlsfx.control.spreadsheet.GridBase
+import org.controlsfx.control.spreadsheet.SpreadsheetCellType
+import org.controlsfx.control.spreadsheet.SpreadsheetView
 import java.net.URL
-import javax.swing.JButton
-import javax.swing.JFrame
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTable
-import javax.swing.JTextField
 
-class SimpleTableGui(downloader: PageDownloader) {
-    private val collector = InterwikiCollector(downloader)
+class TableApplication : Application() {
+    private val collector: InterwikiCollector
 
-    private val pageSelection = JTextField("Rolling pin (Fallout 3)")
-    private val pageSelectionSubmit = JButton("Load")
-    private var table = JTable()
-
-    init {
-        val frame = JFrame()
-        val panel = JPanel(BorderLayout())
-        frame.add(panel)
-
-        val controlPanel = JPanel()
-        panel.add(controlPanel, BorderLayout.NORTH)
-        controlPanel.add(pageSelection)
-        controlPanel.add(pageSelectionSubmit)
-        frame.rootPane.defaultButton = pageSelectionSubmit
-
-        pageSelectionSubmit.addActionListener {
-            table.model = createTableFor(PageLocation("en", pageSelection.text)).model
+    private val pageSelection = TextField()
+    private val pageSelectionSubmit = Button("Load")
+    private val pageSheet = SpreadsheetView(GridBase(0, 0))
+        .apply {
+            isEditable = false
+            showRowHeaderProperty().set(false)
         }
 
-        table = JTable()
-        val scrollPane = JScrollPane(table)
 
-        panel.add(scrollPane, BorderLayout.CENTER)
-        frame.pack()
-        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        frame.isVisible = true
+    init {
+        val downloader = PageDownloader(MediaWikiBotFactory(), createFalloutInterwikiMap())
+        collector = InterwikiCollector(downloader)
     }
 
 
-    private fun createTableFor(page: PageLocation): JTable {
-        val network = collector.buildInterwikiNetwork(page)
-        return JTable(network.toTable(), network.toHeaders())
-    }
-}
+    override fun start(stage: Stage) {
+        val mainPane = BorderPane()
 
-fun InterwikiNetwork.toHeaders() = pages.sortedBy { it.toString() }.toTypedArray()
+        HBox()
+            .also { settingsBox ->
+                mainPane.top = settingsBox
 
-fun InterwikiNetwork.toTable() =
-    pages.sortedBy(PageLocation::toString).map { target ->
-        pages.sortedBy(PageLocation::toString).map { origin ->
-            when {
-                InterwikiLink(origin, target) in getLinksFrom(origin) -> target.toString()
-                origin == target -> "X"
-                else -> ""
+                settingsBox.children.add(pageSelection)
+                settingsBox.children.add(pageSelectionSubmit)
+
+                pageSelectionSubmit.setOnAction(::onPageSelectionSubmit)
             }
-        }.toTypedArray()
-    }.toTypedArray()
+
+        ScrollPane()
+            .also { centerPane ->
+                mainPane.center = centerPane
+
+                centerPane.content = pageSheet
+            }
+
+        stage.scene = Scene(mainPane, 1000.0, 500.0)
+        stage.show()
+    }
+
+    private fun onPageSelectionSubmit(event: ActionEvent) {
+        val network = collector.buildInterwikiNetwork(PageLocation("en", pageSelection.text))
+
+        var pagesInLanguageSum = 0
+        val languageCells = network.languages.map { language ->
+            val pagesInLanguage = network.getPagesInLanguage(language).size
+            val pair = Pair(language, SpreadsheetCellType.STRING.createCell(pagesInLanguageSum, 0, 1, 1, language))
+            pagesInLanguageSum += pagesInLanguage
+            pair
+        }.toMap()
+
+        pageSheet.grid = GridBase(network.pages.size, 3)
+        pageSheet.grid.setRows(
+            FXCollections.observableList(
+                network.pages.sortedBy { it.toString() }.mapIndexed { index, page ->
+                    FXCollections.observableList(listOf(
+                        languageCells[page.language],
+                        SpreadsheetCellType.STRING.createCell(index, 1, 1, 1, "button"),
+                        SpreadsheetCellType.STRING.createCell(index, 2, 1, 1, page.pageName)
+                    ))
+                }
+            )
+        )
+    }
 
 
-fun main(args: Array<String>) {
-    SimpleTableGui(PageDownloader(MediaWikiBotFactory(), createFalloutInterwikiMap()))
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            launch(TableApplication::class.java)
+        }
+
+        fun createFalloutInterwikiMap() =
+            MediaWikiBotFactory().createMediaWikiBot(URL("https://fallout.wikia.com/"))
+                .siteinfo.interwikis
+                .filter { it.value.contains("fallout.wikia.com") }
+                .map { Pair(it.key, it.value.replace("/wiki", "")) }
+                .toMap()
+    }
 }
-
-fun createFalloutInterwikiMap() =
-    MediaWikiBotFactory().createMediaWikiBot(URL("https://fallout.wikia.com/"))
-        .siteinfo.interwikis
-        .filter { it.value.contains("fallout.wikia.com") }
-        .map { Pair(it.key, it.value.replace("/wiki", "")) }
-        .toMap()
