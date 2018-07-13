@@ -5,12 +5,14 @@ import javafx.collections.FXCollections
 import javafx.event.ActionEvent
 import javafx.scene.Scene
 import javafx.scene.control.Button
-import javafx.scene.control.ListView
 import javafx.scene.control.ScrollPane
 import javafx.scene.control.TextField
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.stage.Stage
+import org.controlsfx.control.spreadsheet.GridBase
+import org.controlsfx.control.spreadsheet.SpreadsheetCellType
+import org.controlsfx.control.spreadsheet.SpreadsheetView
 import java.net.URL
 
 class TableApplication : Application() {
@@ -18,7 +20,11 @@ class TableApplication : Application() {
 
     private val pageSelection = TextField()
     private val pageSelectionSubmit = Button("Load")
-    private val pageList = ListView<PageLocation>()
+    private val pageSheet = SpreadsheetView(GridBase(0, 0))
+        .apply {
+            isEditable = false
+            showRowHeaderProperty().set(false)
+        }
 
 
     init {
@@ -44,7 +50,7 @@ class TableApplication : Application() {
             .also { centerPane ->
                 mainPane.center = centerPane
 
-                centerPane.content = pageList
+                centerPane.content = pageSheet
             }
 
         stage.scene = Scene(mainPane, 1000.0, 500.0)
@@ -53,7 +59,27 @@ class TableApplication : Application() {
 
     private fun onPageSelectionSubmit(event: ActionEvent) {
         val network = collector.buildInterwikiNetwork(PageLocation("en", pageSelection.text))
-        pageList.items = FXCollections.observableList(network.pages)
+
+        var pagesInLanguageSum = 0
+        val languageCells = network.languages.map { language ->
+            val pagesInLanguage = network.getPagesInLanguage(language).size
+            val pair = Pair(language, SpreadsheetCellType.STRING.createCell(pagesInLanguageSum, 0, 1, 1, language))
+            pagesInLanguageSum += pagesInLanguage
+            pair
+        }.toMap()
+
+        pageSheet.grid = GridBase(network.pages.size, 3)
+        pageSheet.grid.setRows(
+            FXCollections.observableList(
+                network.pages.sortedBy { it.toString() }.mapIndexed { index, page ->
+                    FXCollections.observableList(listOf(
+                        languageCells[page.language],
+                        SpreadsheetCellType.STRING.createCell(index, 1, 1, 1, "button"),
+                        SpreadsheetCellType.STRING.createCell(index, 2, 1, 1, page.pageName)
+                    ))
+                }
+            )
+        )
     }
 
 
