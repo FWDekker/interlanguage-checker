@@ -89,10 +89,10 @@ internal object PageTest : Spek({
                     .containsExactly(InterwikiLink(location, PageLocation("hhknilzbtu", "Venada")))
             }
 
-            it("finds multiple interwiki links even if not separated by newlines") {
+            it("finds multiple interwiki links in the correct order even if not separated by newlines") {
                 assertThat(createPage("[[lq:Cimicid]] [[ja:Triode]] [[yi:Taglet]]")
                     .getInterwikiLinks(interwikiMap("ja", "lq", "yi")))
-                    .containsExactlyInAnyOrder(
+                    .containsExactly(
                         InterwikiLink(location, PageLocation("lq", "Cimicid")),
                         InterwikiLink(location, PageLocation("ja", "Triode")),
                         InterwikiLink(location, PageLocation("yi", "Taglet"))
