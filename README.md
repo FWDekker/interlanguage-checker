@@ -1,2 +1,2 @@
-# InterwikiChecker
-Checks the validity of old-fashioned Interwiki links
+# Interlanguage Checker
+Checks the validity of MediaWiki interlanguage links.
