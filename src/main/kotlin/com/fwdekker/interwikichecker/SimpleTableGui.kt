@@ -1,16 +1,19 @@
 package com.fwdekker.interwikichecker
 
 import javafx.application.Application
+import javafx.beans.Observable
 import javafx.collections.FXCollections
 import javafx.event.ActionEvent
 import javafx.scene.Scene
 import javafx.scene.control.Button
-import javafx.scene.control.ScrollPane
+import javafx.scene.control.RadioButton
 import javafx.scene.control.TextField
+import javafx.scene.control.ToggleGroup
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.stage.Stage
 import org.controlsfx.control.spreadsheet.GridBase
+import org.controlsfx.control.spreadsheet.SpreadsheetCellBase
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType
 import org.controlsfx.control.spreadsheet.SpreadsheetView
 import java.net.URL
@@ -63,14 +66,25 @@ class TableApplication : Application() {
             pair
         }.toMap()
 
-        pageSheet.grid = GridBase(network.pages.size, 3)
+        val dinges = InterwikiNetworkTable(network)
+        pageSheet.grid = GridBase(network.pages.size, 4)
         pageSheet.grid.setRows(
             FXCollections.observableList(
                 network.pages.sortedBy { it.toString() }.mapIndexed { index, page ->
                     FXCollections.observableList(listOf(
                         languageCells[page.language],
-                        SpreadsheetCellType.STRING.createCell(index, 1, 1, 1, "button"),
-                        SpreadsheetCellType.STRING.createCell(index, 2, 1, 1, page.pageName)
+                        SpreadsheetCellBase(index, 1, 1, 1)
+                            .apply { graphic = dinges.pageButtons[page] },
+                        SpreadsheetCellType.STRING.createCell(index, 2, 1, 1, page.pageName),
+                        SpreadsheetCellType.STRING.createCell(index, 2, 1, 1, "")
+                            .apply {
+                                dinges.selectedPages.addListener { _: Observable ->
+                                    item = dinges.selectedPages
+                                        .subtract(network.getLinksFrom(page).map { it.target })
+                                        .subtract(listOf(page))
+                                        .joinToString(", ")
+                                }
+                            }
                     ))
                 }
             )
@@ -89,6 +103,44 @@ class TableApplication : Application() {
                 .siteinfo.interwikis
                 .filter { it.value.contains("fallout.wikia.com") }
                 .map { Pair(it.key, it.value.replace("/wiki", "")) }
+                .toMap()
+    }
+}
+
+class InterwikiNetworkTable(private val network: InterwikiNetwork) {
+    val selectedPages = FXCollections.observableList(mutableListOf<PageLocation>())
+    val languageGroups: Map<String, ToggleGroup>
+    val pageButtons: Map<PageLocation, RadioButton>
+
+
+    init {
+        languageGroups =
+            network.languages
+                .map { language ->
+                    Pair(language, ToggleGroup())
+                }
+                .toMap()
+
+        pageButtons =
+            network.pages
+                .map { page ->
+                    Pair(
+                        page,
+                        RadioButton()
+                            .apply {
+                                val group = languageGroups[page.language]!!
+
+                                toggleGroup = group
+                                selectedProperty().addListener { _ ->
+                                    selectedPages.removeIf { it.language == page.language }
+                                    selectedPages.add(page)
+                                }
+
+                                if (group.selectedToggle == null)
+                                    isSelected = true
+                            }
+                    )
+                }
                 .toMap()
     }
 }
