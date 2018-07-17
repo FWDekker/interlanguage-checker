@@ -46,12 +46,7 @@ class TableApplication : Application() {
                 pageSelectionSubmit.setOnAction(::onPageSelectionSubmit)
             }
 
-        ScrollPane()
-            .also { centerPane ->
-                mainPane.center = centerPane
-
-                centerPane.content = pageSheet
-            }
+        mainPane.center = pageSheet
 
         stage.scene = Scene(mainPane, 1000.0, 500.0)
         stage.show()
